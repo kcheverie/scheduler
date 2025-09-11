@@ -5,8 +5,9 @@ export type AppointmentType = {
 }
 
 export type AppointmentSlot = {
+  day: string; // "Monday, September 8"
   date: Date; //date and time 
-  startTime: string; // '9:00'
+  time: string; // '9:00'
   booked: boolean; //true if an appointment is booked during that time
 }
 
@@ -32,7 +33,29 @@ export class Clinic {
     return start < end && start >= this.openingTime && end <= this.closingTime
   }
 
+
   getAppointmentSlots(startDate: Date, endDate: number): AppointmentSlot[] {
-    return []
+    const slots: AppointmentSlot[] = []
+    let end = new Date()
+    end.setDate(startDate.getDate() + endDate)
+
+    // loop over the days
+    for(let d = new Date(startDate); d <= end; d.setDate(d.getDate() + 1)) {
+      //loop over the increments between open and close
+      for (let hour = this.openingTime; hour < this.closingTime; hour += 0.5) {
+        const slotDate = new Date(d)
+        slotDate.setHours(Math.floor(hour), (hour % 1) ? 30 : 0, 0, 0)
+
+        slots.push({
+          day: d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+          time: `${Math.floor(hour).toString().padStart(2,'0')}:${(hour % 1 ? 30 : 0).toString().padStart(2,'0')}`,
+          booked: false,
+          date: slotDate
+        });
+      }
+
+    }
+
+    return slots;
   }
 }
