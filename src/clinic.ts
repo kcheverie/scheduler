@@ -1,5 +1,4 @@
-const OPENING_TIME = 9
-const CLOSING_TIME = 17
+
 
 export type AppointmentType = {
   id: string;
@@ -27,8 +26,7 @@ export class Clinic {
     // convert times to decimals if needed ie 5:30 -> 17.5
     const start = startTime.getHours() + startTime.getMinutes() / 60
     const end = endTime.getHours() + endTime.getMinutes() / 60
-    
-      return start < end && start >= OPENING_TIME && end <= CLOSING_TIME
+    return start < end && start >= this.openingTime && end <= this.closingTime
 
   }
 }
