@@ -2,7 +2,7 @@
   "name": "scheduler",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "jest"
   },
@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/kcheverie/scheduler#readme",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "jest": "^30.1.3",
+    "ts-jest": "^29.4.1",
     "typescript": "^5.9.2"
   }
 }
