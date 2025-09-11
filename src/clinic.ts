@@ -24,8 +24,9 @@ export class Clinic {
 
 
   validateBooking(startTime: Date, endTime: Date): boolean {
-    const start = startTime.getHours()
-    const end = endTime.getHours()
+    // convert times to decimals if needed ie 5:30 -> 17.5
+    const start = startTime.getHours() + startTime.getMinutes() / 60
+    const end = endTime.getHours() + endTime.getMinutes() / 60
     
       return start < end && start >= OPENING_TIME && end <= CLOSING_TIME
 

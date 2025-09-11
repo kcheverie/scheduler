@@ -36,7 +36,12 @@ test('a 5:30pm end time is ivalid', () => {
   expect(clinic.validateBooking(start, end)).toBe(false);
 });
 
-// add test for 4:00pm start time and 5:30pm end time
+
+test('an 4pm start time and a 5:30 pm end time is invalid', () => {
+  start.setHours(16, 0, 0, 0);
+  end.setHours(17, 30, 0, 0);
+  expect(clinic.validateBooking(start, end)).toBe(false);
+});
 
 test('an end time can not be earlier than a start time', () => {
   start.setHours(3, 30, 0, 0);
