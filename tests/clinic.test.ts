@@ -1,14 +1,16 @@
-import { Clinic } from '../src/clinic';
+import { Clinic, AppointmentSlot } from '../src/clinic';
 
 
 let clinic: Clinic;
 let start: Date;
 let end: Date;
+let today: Date;
 
 beforeEach(() => {
+  today = new Date("2025-09-08T13:00:00") //make sure "today" is always september 8 at 1pm
   clinic = new Clinic(9, 17) //initialize Clinic Hours
-  start = new Date();
-  end = new Date();
+  start = today
+  end = today;
 })
 
 test('a 9am start time and 10am end time is valid', () => {
@@ -47,4 +49,37 @@ test('an end time can not be earlier than a start time', () => {
   start.setHours(3, 30, 0, 0);
   end.setHours(1, 0, 0, 0);
   expect(clinic.validateBooking(start, end)).toBe(false);
+});
+
+describe('getAppointmentSlots', () => {
+  let appointmentSlots: AppointmentSlot[];
+
+  beforeEach(() => {
+    appointmentSlots = clinic.getAppointmentSlots(today, 7); // generate 7 days of slots
+  });
+
+  test('is an array', () => {
+    expect(Array.isArray(appointmentSlots)).toBe(true);
+  });
+
+  test('returns slots with the required properties', () => {
+    appointmentSlots.forEach(slot => {
+      expect(slot).toHaveProperty('day')
+      expect(slot).toHaveProperty('time')
+      expect(slot).toHaveProperty('date')
+      expect(slot).toHaveProperty('booked')
+    })
+  })
+
+  test('only returns slots that are not booked', () => {
+    expect(appointmentSlots.every(slot => slot.booked === false)).toBe(true);
+  });
+
+  test('only returns slots within clinic hours', () => {
+    appointmentSlots.forEach(slot => {
+      const startTime = slot.date.getHours() + slot.date.getMinutes() / 60
+      expect(startTime).toBeGreaterThanOrEqual(clinic.closingTime)
+      expect(startTime).toBeLessThan(clinic.closingTime)
+    })
+  })
 });
