@@ -37,9 +37,7 @@ export class Clinic {
         const hour = Math.floor(half / 2);
         const minute = (half % 2) * 30;
   
-        const slotDate = new Date(d);
-        slotDate.setHours(hour, minute, 0, 0);
-  
+        const slotDate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hour, minute, 0, 0);
         const slotEnd = new Date(slotDate.getTime() + 30 * 60 * 1000);
   
         const isBooked = this.bookings.some(b => slotDate < b.end && slotEnd > b.start);
@@ -48,14 +46,15 @@ export class Clinic {
           day: d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
           time: `${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`,
           booked: isBooked,
-          date: slotDate
+          date: slotDate,
         });
       }
     }
   
     return slots;
   }
-
+  
+  
   clearBookings() {
     this.bookings = [];
   }

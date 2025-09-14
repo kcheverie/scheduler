@@ -72,6 +72,27 @@ describe('isBookingValid', () => {
     const validation = clinic.isBookingValid(start, end);
     expect(validation.valid).toBe(true);
   })
+
+  test('a booking that starts at opening time is valid', () => {
+    start = new Date("2025-09-09T09:00:00");
+    end = new Date("2025-09-09T10:30:00");
+    const validation = clinic.isBookingValid(start, end)
+    expect(validation.valid).toBe(true);
+  })
+
+  test('a booking that ends at closing time is valid', () => {
+    start = new Date("2025-09-09T16:00:00");
+    end = new Date("2025-09-09T17:00:00");
+    const validation = clinic.isBookingValid(start, end)
+    expect(validation.valid).toBe(true);
+  })
+
+  test('a booking that starts exactly closing time is invalid', () => {
+    start = new Date("2025-09-09T17:00:00");
+    end = new Date("2025-09-09T18:00:00");
+    const validation = clinic.isBookingValid(start, end)
+    expect(validation.valid).toBe(false);
+  })
 })
 
 
@@ -107,16 +128,57 @@ describe('getAppointmentSlots', () => {
     })
   })
 
-  test('slots with bookings are marked as booked', () => {
+  test('a 30-minute booking marks overlapping slot as booked', () => {
+    clinic.clearBookings();
+  
+    clinic.createBooking(new Date('2025-09-09T10:00:00'), 'patient01', 'checkin');
+  
+    const slots = clinic.getAppointmentSlots(new Date(2025, 8, 9), 1);
+  
+    const slotAt10   = slots.find(s => s.date.getHours() === 10 && s.date.getMinutes() === 0)!;
+    const slotAt1030 = slots.find(s => s.date.getHours() === 10 && s.date.getMinutes() === 30)!;
+
+  
+    expect(slotAt10.booked).toBe(true);
+    expect(slotAt1030.booked).toBe(false);
+
+  });
+
+  test('a 60-minute booking marks all overlapping slots as booked', () => {
     clinic.clearBookings();
     clinic.createBooking(new Date('2025-09-09T10:00:00'), 'patient01', 'appt');
   
     const slots = clinic.getAppointmentSlots(new Date(2025, 8, 9), 1);
   
     const slotAt10 = slots.find(s => s.date.getHours() === 10 && s.date.getMinutes() === 0);
+    const slotAt1030 = slots.find(s => s.date.getHours() === 10 && s.date.getMinutes() === 30)!;
+    const slotAt11   = slots.find(s => s.date.getHours() === 11 && s.date.getMinutes() === 0)!;
+
     expect(slotAt10).toBeDefined();
     expect(slotAt10!.booked).toBe(true);
+    expect(slotAt1030.booked).toBe(true);
+    expect(slotAt11.booked).toBe(false);
+
   });
+
+  test('a 90-minute booking marks all overlapping slots as booked', () => {
+    clinic.clearBookings();
+  
+    clinic.createBooking(new Date('2025-09-09T10:00:00'), 'patient01', 'consult');
+  
+    const slots = clinic.getAppointmentSlots(new Date(2025, 8, 9), 1);
+  
+    const slotAt10   = slots.find(s => s.date.getHours() === 10 && s.date.getMinutes() === 0)!;
+    const slotAt1030 = slots.find(s => s.date.getHours() === 10 && s.date.getMinutes() === 30)!;
+    const slotAt11   = slots.find(s => s.date.getHours() === 11 && s.date.getMinutes() === 0)!;
+    const slotAt1130 = slots.find(s => s.date.getHours() === 11 && s.date.getMinutes() === 30)!;
+  
+    expect(slotAt10.booked).toBe(true);
+    expect(slotAt1030.booked).toBe(true);
+    expect(slotAt11.booked).toBe(true);
+    expect(slotAt1130.booked).toBe(false);
+  });
+  
 });
 
 describe('createBooking', () => {
@@ -162,6 +224,7 @@ describe('createBooking', () => {
       expect(firstBooking).toBeDefined()
       expect(secondBooking).toBeDefined()
     })
+
   })
 
   describe('unsuccessful bookings', () => {
