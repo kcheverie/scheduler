@@ -72,7 +72,6 @@ describe('isBookingValid', () => {
     const validation = clinic.isBookingValid(start, end);
     expect(validation.valid).toBe(true);
   })
-
 })
 
 
@@ -106,6 +105,16 @@ describe('getAppointmentSlots', () => {
       expect(startTime).toBeGreaterThanOrEqual(clinic.openingTime)
       expect(startTime).toBeLessThan(clinic.closingTime)
     })
+  })
+
+  test('slots with bookings are marked as booked', () => {
+    clinic.clearBookings();
+    clinic.createBooking(new Date('2025-09-09T10:00:00'), 'patient01', 'appt')
+
+    const slots = clinic.getAppointmentSlots(new Date('2025-09-09'), 1);
+
+    const slotAt10 = slots.find(slot => slot.date.getHours() === 10 && slot.date.getMinutes() === 0)
+    expect(slotAt10!.booked).toBe(true)
   })
 });
 
