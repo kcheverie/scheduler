@@ -28,17 +28,6 @@ To build the TypeScript source into JavaScript:
 ```bash
 npm run build
 ```
-
-To run the compiled code (after building):
-```bash
-node dist/index.js
-```
-
-For development with automatic rebuild:
-```bash
-npm run dev
-```
-
 ---
 
 ## Running Tests
