@@ -1,12 +1,10 @@
-import { Clinic, AppointmentSlot } from '../src/clinic';
-
+import { Clinic } from '../src/clinic';
+import type { AppointmentType, AppointmentSlot } from '../src/models'
 
 let clinic: Clinic;
 let start: Date;
 let end: Date;
 let today: Date;
-
-
 
 
 describe('Clinic', () => {
