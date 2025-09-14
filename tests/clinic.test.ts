@@ -109,13 +109,14 @@ describe('getAppointmentSlots', () => {
 
   test('slots with bookings are marked as booked', () => {
     clinic.clearBookings();
-    clinic.createBooking(new Date('2025-09-09T10:00:00'), 'patient01', 'appt')
-
-    const slots = clinic.getAppointmentSlots(new Date('2025-09-09'), 1);
-
-    const slotAt10 = slots.find(slot => slot.date.getHours() === 10 && slot.date.getMinutes() === 0)
-    expect(slotAt10!.booked).toBe(true)
-  })
+    clinic.createBooking(new Date('2025-09-09T10:00:00'), 'patient01', 'appt');
+  
+    const slots = clinic.getAppointmentSlots(new Date(2025, 8, 9), 1);
+  
+    const slotAt10 = slots.find(s => s.date.getHours() === 10 && s.date.getMinutes() === 0);
+    expect(slotAt10).toBeDefined();
+    expect(slotAt10!.booked).toBe(true);
+  });
 });
 
 describe('createBooking', () => {

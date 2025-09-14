@@ -24,27 +24,35 @@ export class Clinic {
     this.bookings = [];
   }
 
-  getAppointmentSlots(startDate: Date, endDate: number): AppointmentSlot[] {
-    const slots: AppointmentSlot[] = []
-    let end = new Date()
-    end.setDate(startDate.getDate() + endDate)
-
-    // loop over the days
-    for(let d = new Date(startDate); d <= end; d.setDate(d.getDate() + 1)) {
-      //loop over the increments between open and close
-      for (let hour = this.openingTime; hour < this.closingTime; hour += 0.5) {
-        const slotDate = new Date(d)
-        slotDate.setHours(Math.floor(hour), (hour % 1) ? 30 : 0, 0, 0)
-
+  getAppointmentSlots(startDate: Date, days: number): AppointmentSlot[] {
+    const slots: AppointmentSlot[] = [];
+  
+    // normalize to LOCAL midnight
+    const start = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endExclusive = new Date(start);
+    endExclusive.setDate(start.getDate() + days);
+  
+    for (let d = new Date(start); d < endExclusive; d.setDate(d.getDate() + 1)) {
+      for (let half = this.openingTime * 2; half < this.closingTime * 2; half++) {
+        const hour = Math.floor(half / 2);
+        const minute = (half % 2) * 30;
+  
+        const slotDate = new Date(d);
+        slotDate.setHours(hour, minute, 0, 0);
+  
+        const slotEnd = new Date(slotDate.getTime() + 30 * 60 * 1000);
+  
+        const isBooked = this.bookings.some(b => slotDate < b.end && slotEnd > b.start);
+  
         slots.push({
           day: d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-          time: `${Math.floor(hour).toString().padStart(2,'0')}:${(hour % 1 ? 30 : 0).toString().padStart(2,'0')}`,
-          booked: false,
+          time: `${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`,
+          booked: isBooked,
           date: slotDate
         });
       }
-
     }
+  
     return slots;
   }
 
