@@ -114,5 +114,11 @@ export class Clinic {
     }
   }
 
+  getBookings(date?: Date) {
+    return !date ? this.bookings : this.bookings.filter(b => 
+      b.start.toDateString() === date.toDateString()
+    );
+  }
+
 }
 

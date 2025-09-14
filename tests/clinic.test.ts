@@ -18,7 +18,6 @@ describe('isBookingValid', () => {
     start = new Date("2025-09-09T09:00:00");
     end = new Date("2025-09-09T10:00:00");
     const validation = clinic.isBookingValid(start, end)
-    console.log(validation)
     expect(validation.valid).toBe(true);
   });
   
@@ -172,4 +171,36 @@ describe('createBooking', () => {
       expect(() => clinic.createBooking(date, 'patient01', 'appointment')).toThrow('invalid appointment type')
     })
   })
-};
+});
+
+describe('getAllBookings', () => {
+  beforeAll(() => {
+    clinic.createBooking(new Date("2025-09-09T10:00:00"), 'patient01', 'checkin');
+    clinic.createBooking(new Date("2025-09-10T11:00:00"), 'patient02', 'appt');
+    clinic.createBooking(new Date("2025-09-11T13:30:00"), 'patient03', 'consult');
+    clinic.createBooking(new Date("2025-09-12T14:30:00"), 'patient04', 'checkin');
+    clinic.createBooking(new Date("2025-09-13T16:00:00"), 'patient05', 'appt');
+  })
+
+  test('return all booking for the day', () => {
+    const bookings = clinic.getBookings()
+    expect(bookings).toHaveLength(5)
+   })
+   
+   test('return all bookings if no date provided', () => {
+    const bookings = clinic.getBookings()
+    expect(bookings).toHaveLength(5)
+   })
+
+   test('return bookings for specific date', () => {
+    const date = new Date('2025-09-10')
+    const bookings = clinic.getBookings(date)
+    expect(bookings).toHaveLength(1)
+   })
+
+   test('return empty array if date has no bookings', () => {
+    const date = new Date('2025-09-15')
+    const bookings = clinic.getBookings(date)
+    expect(bookings).toHaveLength(0)
+   })
+})
