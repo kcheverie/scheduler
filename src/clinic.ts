@@ -5,15 +5,19 @@ export class Clinic {
   openingTime: number;
   closingTime: number;
   private appointmentTypes: AppointmentType[];
+  private nowFn: () => Date;
+  bookings: Booking[]
 
-  constructor(openingTime: number, closingTime: number) {
+  constructor(openingTime: number, closingTime: number, nowFn: ()=> Date) {
     this.openingTime = openingTime;
     this.closingTime = closingTime;
     this.appointmentTypes = [
       { id: 'appt', name: "Appointment", length: 60 },
       { id: 'consult', name: "Consultation", length: 90 },
       { id: 'checkin', name: "Check-In", length: 30 },
-    ] 
+    ];
+    this.nowFn = nowFn; 
+    this.bookings = [];
   }
 
   validateBooking(startTime: Date, endTime: Date): boolean {
@@ -48,18 +52,57 @@ export class Clinic {
 
     return slots;
   }
+  
+  clearBookings() {
+    this.bookings = [];
+  }
 
   createBooking(date: Date, patientId: string, appointmentTypeId: string): Booking {
+    const now = this.nowFn();
     //stub test
     if (!date || !patientId || !appointmentTypeId) {
       throw new Error('invalid booking data')
     }
-    return {
+
+    let appointmentType = this.appointmentTypes.find((appointmentType) => appointmentType.id === appointmentTypeId)
+    
+    if (!appointmentType) throw new Error('invalid appointment type')
+    
+    const bookingEnd = new Date(date.getTime() + appointmentType.length * 60 * 1000)
+
+    if (!this.validateBooking(date, bookingEnd)) {
+      throw new Error('can not create a booking outside clinic hours')
+    }
+
+    if (date.getTime() < now.getTime()) {
+      throw new Error('can not create a booking in the past')
+    }
+
+    const twoHoursFromNow = new Date(now);
+    twoHoursFromNow.setHours(now.getHours() + 2)
+
+    if (date.getTime() < twoHoursFromNow.getTime()) {
+      throw new Error('can not create a booking in the next two hours')
+    }
+
+
+
+    const newBooking = {
       id: 'stub-id', 
       patientId,
       appointmentTypeId,
       start: date,
-      end: new Date(date.getTime() + 60 * 60 * 100) //one hour
+      end: new Date(date.getTime() + appointmentType.length * 60 * 1000)
     }
+
+    const overlaps = this.bookings.some(booking => 
+      newBooking.start < booking.end && newBooking.end > booking.start
+    )
+
+    if (overlaps) throw new Error ("can not create a booking that overlaps with another booking")
+
+    this.bookings.push(newBooking)
+    return newBooking
   }
+
 }

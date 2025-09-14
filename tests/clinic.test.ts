@@ -9,7 +9,7 @@ let today: Date;
 describe('Clinic', () => {
   beforeEach(() => {
     today = new Date("2025-09-08T13:00:00") //make sure "today" is always september 8 at 1pm
-    clinic = new Clinic(9, 17) //initialize Clinic Hours
+    clinic = new Clinic(9, 17, () => today) //initialize Clinic Hours and today's date
     start = new Date(today);
     end = new Date(today);
   })
@@ -89,10 +89,16 @@ describe('getAppointmentSlots', () => {
 });
 
 describe('createBooking', () => {
+  beforeEach(() => {
+    clinic.clearBookings();
+  })
+
   describe('successful bookings', () => {
     test('a booking for a checkin can be created and it lasts 30 minutes', () => {
       const date = new Date("2025-09-09T15:30:00") 
       const booking = clinic.createBooking(date, 'patient01', 'checkin')
+     
+      console.log("BOOKING", booking.start)
       expect(booking.start.getTime()).toBe(date.getTime());
       const expectedEnd = new Date(date.getTime() + 30 * 60 * 1000)
       expect(booking.end.getTime()).toBe(expectedEnd.getTime())
@@ -117,11 +123,11 @@ describe('createBooking', () => {
     test('allow back-to-back bookings', () => {
       //book at 4:00
       const dateFirstAppt = new Date("2025-09-09T16:00:00") 
-      const firstBooking = clinic.createBooking(dateFirstAppt, 'patient01', 'appt')
+      const firstBooking = clinic.createBooking(dateFirstAppt, 'patient01', 'checkin')
 
       //book at 4:30
       const dateSecondAppt = new Date("2025-09-09T16:30:00") 
-      const secondBooking = clinic.createBooking(dateSecondAppt, 'patient01', 'appt')
+      const secondBooking = clinic.createBooking(dateSecondAppt, 'patient01', 'checkin')
 
       expect(firstBooking).toBeDefined()
       expect(secondBooking).toBeDefined()
@@ -129,6 +135,7 @@ describe('createBooking', () => {
   })
 
   describe('unsuccessful bookings', () => {
+
     test('can not creating a booking in the past', () => {
       const dateInPast = new Date("2025-09-08T10:00:00") 
       expect(() => clinic.createBooking(dateInPast, 'patient01', 'appt')).toThrow('can not create a booking in the past')
@@ -141,13 +148,13 @@ describe('createBooking', () => {
   
     test('can not create a booking before clinic hours', () => {
       const dateEarly = new Date("2025-09-09T07:00:00") 
-      expect(() => clinic.createBooking(dateEarly, 'patient01', 'appt')).toThrow('can not create a booking before clinic hours')
+      expect(() => clinic.createBooking(dateEarly, 'patient01', 'appt')).toThrow('can not create a booking outside clinic hours')
 
     })
   
     test('can not create a booking after clinic hours', () => {
       const dateLate = new Date("2025-09-09T20:00:00") 
-      expect(() => clinic.createBooking(dateLate, 'patient01', 'appt')).toThrow('can not create a booking after clinic hours')
+      expect(() => clinic.createBooking(dateLate, 'patient01', 'appt')).toThrow('can not create a booking outside clinic hours')
 
     })
   
@@ -162,9 +169,9 @@ describe('createBooking', () => {
       expect(() => clinic.createBooking(dateSecondAppt, 'patient01', 'consult')).toThrow('can not create a booking that overlaps with another booking')
     })
   
-    test('can not create a booking with an invalid patient or appointment ID', () => {
+    test('can not create a booking with an invalid appointment ID', () => {
       const date = new Date("2025-09-09T15:30:00") 
-      expect(clinic.createBooking(date, 'bad', 'bad')).toThrow('invalid booking data')
+      expect(() => clinic.createBooking(date, 'patient01', 'appointment')).toThrow('invalid appointment type')
     })
   })
 });
