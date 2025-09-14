@@ -1,11 +1,10 @@
 import { Clinic } from '../src/clinic';
-import type { AppointmentType, AppointmentSlot } from '../src/models'
+import type { AppointmentType, AppointmentSlot, Booking } from '../src/models'
 
 let clinic: Clinic;
 let start: Date;
 let end: Date;
 let today: Date;
-
 
 describe('Clinic', () => {
   beforeEach(() => {
@@ -85,6 +84,87 @@ describe('getAppointmentSlots', () => {
       const startTime = slot.date.getHours() + slot.date.getMinutes() / 60
       expect(startTime).toBeGreaterThanOrEqual(clinic.openingTime)
       expect(startTime).toBeLessThan(clinic.closingTime)
+    })
+  })
+});
+
+describe('createBooking', () => {
+  describe('successful bookings', () => {
+    test('a booking for a checkin can be created and it lasts 30 minutes', () => {
+      const date = new Date("2025-09-09T15:30:00") 
+      const booking = clinic.createBooking(date, 'patient01', 'checkin')
+      expect(booking.start.getTime()).toBe(date.getTime());
+      const expectedEnd = new Date(date.getTime() + 30 * 60 * 1000)
+      expect(booking.end.getTime()).toBe(expectedEnd.getTime())
+    })
+  
+    test('a booking for an appointment can be created and it lasts 60 minutes', () => {
+      const date = new Date("2025-09-09T15:30:00") 
+      const booking = clinic.createBooking(date, 'patient01', 'appt')
+      expect(booking.start.getTime()).toBe(date.getTime());
+      const expectedEnd = new Date(date.getTime() + 60 * 60 * 1000)
+      expect(booking.end.getTime()).toBe(expectedEnd.getTime())
+    })
+  
+    test('a booking for a consultation can be created and it lasts 90 minutes', () => {
+      const date = new Date("2025-09-09T15:30:00") 
+      const booking = clinic.createBooking(date, 'patient01', 'consult')
+      expect(booking.start.getTime()).toBe(date.getTime());
+      const expectedEnd = new Date(date.getTime() + 90 * 60 * 1000)
+      expect(booking.end.getTime()).toBe(expectedEnd.getTime())
+    })
+    
+    test('allow back-to-back bookings', () => {
+      //book at 4:00
+      const dateFirstAppt = new Date("2025-09-09T16:00:00") 
+      const firstBooking = clinic.createBooking(dateFirstAppt, 'patient01', 'appt')
+
+      //book at 4:30
+      const dateSecondAppt = new Date("2025-09-09T16:30:00") 
+      const secondBooking = clinic.createBooking(dateSecondAppt, 'patient01', 'appt')
+
+      expect(firstBooking).toBeDefined()
+      expect(secondBooking).toBeDefined()
+    })
+  })
+
+  describe('unsuccessful bookings', () => {
+    test('can not creating a booking in the past', () => {
+      const dateInPast = new Date("2025-09-08T10:00:00") 
+      expect(() => clinic.createBooking(dateInPast, 'patient01', 'appt')).toThrow('can not create a booking in the past')
+    })
+  
+    test('can not create booking that begins in the next two hours', () => {
+      const dateNextTwoHours = new Date("2025-09-08T14:00:00") 
+      expect(() => clinic.createBooking(dateNextTwoHours, 'patient01', 'appt')).toThrow('can not create a booking in the next two hours')
+    })
+  
+    test('can not create a booking before clinic hours', () => {
+      const dateEarly = new Date("2025-09-09T07:00:00") 
+      expect(() => clinic.createBooking(dateEarly, 'patient01', 'appt')).toThrow('can not create a booking before clinic hours')
+
+    })
+  
+    test('can not create a booking after clinic hours', () => {
+      const dateLate = new Date("2025-09-09T20:00:00") 
+      expect(() => clinic.createBooking(dateLate, 'patient01', 'appt')).toThrow('can not create a booking after clinic hours')
+
+    })
+  
+    test('can not create a booking that overlaps with another booking', () => {
+      //create booking for 4:00pm
+      const dateFirstAppt = new Date("2025-09-09T16:00:00") 
+      const firstBooking = clinic.createBooking(dateFirstAppt, 'patient01', 'appt')
+      expect(firstBooking).toBeDefined()
+      
+      //attempt a booking for an appoinment that starts at 3:30
+      const dateSecondAppt = new Date("2025-09-09T15:30:00") 
+      expect(() => clinic.createBooking(dateSecondAppt, 'patient01', 'consult')).toThrow('can not create a booking that overlaps with another booking')
+    })
+  
+    test('can not create a booking with an invalid patient or appointment ID', () => {
+      const date = new Date("2025-09-09T15:30:00") 
+      expect(clinic.createBooking(date, 'bad', 'bad')).toThrow('invalid booking data')
     })
   })
 });

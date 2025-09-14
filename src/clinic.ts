@@ -1,4 +1,4 @@
-import type { AppointmentType, AppointmentSlot } from './models'
+import type { AppointmentType, AppointmentSlot, Booking } from './models'
 
 
 export class Clinic {
@@ -47,5 +47,19 @@ export class Clinic {
     }
 
     return slots;
+  }
+
+  createBooking(date: Date, patientId: string, appointmentTypeId: string): Booking {
+    //stub test
+    if (!date || !patientId || !appointmentTypeId) {
+      throw new Error('invalid booking data')
+    }
+    return {
+      id: 'stub-id', 
+      patientId,
+      appointmentTypeId,
+      start: date,
+      end: new Date(date.getTime() + 60 * 60 * 100) //one hour
+    }
   }
 }
