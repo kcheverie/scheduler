@@ -100,7 +100,7 @@ export class Clinic {
 
     if (validation.valid) {
       const newBooking = {
-        id: 'stub-id', 
+        id: `id-${date.getTime()}`, 
         patientId,
         appointmentTypeId,
         start: date,
